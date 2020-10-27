@@ -58,6 +58,16 @@
             <scope>test</scope>
             <version>4.13</version>
         </dependency>
+
+        <!--QueryDsl은 SpringBoot에서 의존성 관리를 하기 때문에 명시할 필요 없음-->
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-apt</artifactId> <!-- 코드 생성 모듈 -->
+        </dependency>
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -65,6 +75,27 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--
+            querydsl의 domain specific language를 생성하기 위해서 플러그인을 별도 설정 해줘야 한다.
+            maven의 lifecycle 중, compile을 실행하여 outputDirectory에
+            도메인(Entity)에 대한 Querydsl query type 객체를 미리 생성해줘야 한다.
+            -->
+            <plugin>
+                <groupId>com.mysema.maven</groupId>
+                <artifactId>apt-maven-plugin</artifactId>
+                <version>1.1.3</version> <!-- 이거는 스프링부트가 Version 관리안해줘서 명시해줘야 함 -->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/generated-sources/java</outputDirectory>
+                            <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -1,5 +1,6 @@
 package com.seungmoo.jpa3.post;
 
+import com.querydsl.core.types.Predicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -83,6 +86,22 @@ public class PostRepositoryTest {
         // 하지만 delete(DELETE) DML은 실행하지 않는다. (Transaction의 롤백 정책 때문에)
         postRepository.delete(post);
         postRepository.flush(); // flush()로 강제로 JPA가 DML을 실행시키게 할 수 있다.
+    }
+
+    @Test
+    public void querydslTest() {
+        Post post = new Post();
+        post.setTitle("hibernate");
+        postRepository.save(post.publish());
+
+        Predicate predicate = QPost.post.title.contains("hibernate");
+        Optional<Post> one = postRepository.findOne(predicate);
+        assertThat(one).isNotEmpty();
+
+        Optional<Post> post1 = postRepository.findOne(QPost.post.title.containsIgnoreCase("Hi"));
+        assertTrue(post1.isPresent());
+        Optional<Post> post2 = postRepository.findOne(QPost.post.title.containsIgnoreCase("jpa"));
+        assertFalse(post2.isPresent());
     }
 
 }

@@ -8,6 +8,9 @@ import java.io.Serializable;
 
 /**
  * 이거는 naming-rule이 없다.
+ *
+ * SimpleJpaRepository : JpaRepository의 구현 클래스
+ *  Custom Repository의 구현클래스는 SimpleJpaRepository를 상속받게 된다.
  */
 public class SimpleMyRepository<T, ID extends Serializable> extends SimpleJpaRepository<T, ID> implements MyRepository<T, ID> {
 
