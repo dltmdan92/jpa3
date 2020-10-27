@@ -4,6 +4,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,10 +13,45 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
+@Import(PostRepositoryTestConfig.class)
 public class PostRepositoryTest {
 
     @Autowired
     PostRepository postRepository;
+
+    @Autowired
+    ApplicationContext applicationContext;
+
+    /**
+     * 스프링 코어의 이벤트를 사용.
+     * 스프링 Data Common : 도메인 이벤트
+     */
+    @Test
+    public void event() {
+        Post post = new Post();
+        post.setTitle("event");
+        PostPublishedEvent event = new PostPublishedEvent(post);
+
+        applicationContext.publishEvent(event);
+    }
+
+    /**
+     * 스프링 데이터의 이벤트 메서드를 사용한다.
+     */
+    @Test
+    public void springDataEvent() {
+        Post post = new Post();
+        post.setTitle("hibernate");
+
+        assertThat(postRepository.contains(post)).isFalse();
+
+        postRepository.save(post.publish());
+
+        assertThat(postRepository.contains(post)).isTrue();
+
+        postRepository.delete(post);
+        postRepository.flush();
+    }
 
     @Test
     public void crud() {
@@ -47,4 +84,5 @@ public class PostRepositoryTest {
         postRepository.delete(post);
         postRepository.flush(); // flush()로 강제로 JPA가 DML을 실행시키게 할 수 있다.
     }
+
 }
